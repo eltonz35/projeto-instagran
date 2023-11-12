@@ -1,14 +1,18 @@
-import  express  from "express";
-import dotenv from 'dotenv';
-import { AppDataSource } from "./database/data-source";
+import { startWebServer } from "./app";
+import { startDatabase } from "./database/app-data-source";
 
-dotenv.config()
 
-const app = express();
 
-app.use(express.json())
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server listening on port ${process.env.PORT}`);
-  
-});
+async function main() {
+  try {
+    await startDatabase();
+    console.log(`Database initialized`);
+    await startWebServer();
+    console.log(`Web server initialized`);
+  } catch (error) {
+    console.log(error, "Error initializing app");
+  }
+}
+
+main();

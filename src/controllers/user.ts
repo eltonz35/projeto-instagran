@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { User } from "../entities/user";
-import { AppDataSource } from "../database/data-source";
+import { AppDataSource } from "../database/app-data-source";
 
 export const cadastrarUsuario = async (req: Request, res: Response) => {
   try {

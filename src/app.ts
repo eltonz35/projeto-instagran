@@ -1,19 +1,18 @@
-import express from "express";
-import {
-  atualizarUsuario,
-  cadastrarUsuario,
-  deletarUsuario,
-  listarUsuarios,
-} from "./controllers/user";
+import  express  from "express";
+import dotenv from 'dotenv';
 
-const app = express();
 
-app.use(express.json());
+dotenv.config()
 
-// Rotas
-app.post("/users", cadastrarUsuario);
-app.get("/users", listarUsuarios);
-app.patch("/users/:user_id", atualizarUsuario);
-app.delete("/users/:user_id", deletarUsuario);
+export const app = express();
 
-export default app;
+app.use(express.json())
+
+export async function startWebServer() {
+  return new Promise((resolve) => {
+    app.listen(process.env.PORT, () => {
+      console.log(`Server listening on port ${process.env.PORT}`);
+      resolve(null);
+    }); 
+  });
+}
