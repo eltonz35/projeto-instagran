@@ -1,6 +1,8 @@
+import dotenv from 'dotenv';
+dotenv.config()
+
 import { startWebServer } from "./app";
 import { startDatabase } from "./database/app-data-source";
-
 
 
 

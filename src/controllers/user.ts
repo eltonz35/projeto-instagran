@@ -1,100 +1,93 @@
 import { Request, Response } from "express";
 import { User } from "../entities/user";
 import { AppDataSource } from "../database/app-data-source";
+import bcrypt from "bcrypt";
 
-export const cadastrarUsuario = async (req: Request, res: Response) => {
-  try {
-    const user = new User();
-    user.name = req.body.name;
-    user.email = req.body.email;
-    user.password = req.body.password;
-    user.cpf = req.body.cpf;
+class UserController {
+  async createUser(req: Request, res: Response) {
+    const { name, email, password, bio} = req.body;
 
-    await AppDataSource.getRepository(User).save(user);
-
-    return res.status(201).json({ ok: true });
-  } catch (error) {
-    console.log(error, "Erro ao cadastrar usuário");
-    return res
-      .status(500)
-      .json({ ok: false, message: "Erro ao cadastrar o usuário" });
+    try {
+      const user = await AppDataSource.getRepository(User).save({
+        name: name,
+        email: email,
+        password_hash: bcrypt.hashSync(password, 8),
+        bio: bio
+      });
+      console.log(`User ${user.id} created`);
+      res.status(201).json({ ok: true, message: "Usuário criado com sucesso"});
+    } catch (error) {
+      return res.status(400).json({ message: "Erro ao criar usuário"})
+    }
   }
-};
 
-export const listarUsuarios = async (req: Request, res: Response) => {
-  try {
-    const users = await AppDataSource.getRepository(User).find();
-    return res.status(200).json({ ok: true, users: users });
-  } catch (error) {
-    console.log(error, "Erro ao listar usuários");
-    return res
-      .status(500)
-      .json({ ok: false, message: "Erro ao cadastrar o usuário" });
+  async listUsers(req: Request, res: Response) {
+    try {
+      const users = await AppDataSource.getRepository(User).find({
+        select: ["id", "name", "bio", "followers_count", "following_count"],
+      });
+      return res.status(200).json({ ok: true, users});
+    } catch (error) {
+      return res.status(400).json({ message: "Erro ao listar usuários"});
+    }
   }
-};
 
-export const atualizarUsuario = async (req: Request, res: Response) => {
-  const id = req.params.user_id;
-
-  try {
-    const user = await AppDataSource.getRepository(User).findOne({
-      where: { id: parseInt(id) },
-    });
-
-    if (!user) {
-      return res
-        .status(404)
-        .json({ ok: false, message: "Não existe um usuário com este ID" });
+  async findOne(req: Request, res: Response) {
+    try {
+      const user = await AppDataSource.getRepository(User).findOne({
+        select: ["id", "name", "bio", "followers_count", "following_count"],
+        where: { id: +req.params.user_id},
+      });
+      return res.status(200).json({ ok: true, user})
+    } catch (error) {
+      console.log(error, "Erro in findOne");
+      res.status(500).send({ ok: false, error: "error-findind-user"})
     }
-
-    if (req.body.name) {
-      user.name = req.body.name;
-    }
-
-    if (req.body.email) {
-      user.email = req.body.email;
-    }
-
-    if (req.body.password) {
-      user.password = req.body.password;
-    }
-
-    if (req.body.cpf) {
-      user.cpf = req.body.cpf;
-    }
-
-    await AppDataSource.getRepository(User).save(user);
-
-    return res.status(200).json({ ok: true });
-  } catch (error) {
-    console.log(error, "Erro ao atualizar usuário");
-    return res
-      .status(500)
-      .json({ ok: false, message: "Erro ao cadastrar o usuário" });
   }
-};
 
-export const deletarUsuario = async (req: Request, res: Response) => {
-  const id = req.params.user_id;
+  async updateUser(req: Request, res: Response) {
+    try {
+      const { name, bio } = req.body;
+      const user = await AppDataSource.getRepository(User).findOne({
+        where: { id: +req.params.user_id },
+      });
 
-  try {
-    const user = await AppDataSource.getRepository(User).findOne({
-      where: { id: parseInt(id) },
-    });
+      if(!user) {
+        return res.status(404).json({ ok: false, error: "user-not-found"});
+      }
 
-    if (!user) {
-      return res
-        .status(404)
-        .json({ ok: false, message: "Não existe um usuário com este ID" });
+      if(name) user.name = name;
+      if(bio) user.bio = bio;
+
+      await AppDataSource.getRepository(User).save(user);
+      console.log(`User ${user.id} updated`);
+
+      return res.status(200).json({ ok: true, user})
+    } catch (error) {
+      console.log(error, "Error n updateUser");
+      res.status(500).send({ ok: false, error: "error-updating-user" });
     }
-
-    await AppDataSource.getRepository(User).delete(user);
-
-    return res.status(200).json({ ok: true });
-  } catch (error) {
-    console.log(error, "Erro ao deletar usuário");
-    return res
-      .status(500)
-      .json({ ok: false, message: "Erro ao cadastrar o usuário" });
   }
-};
+
+  async deleteUser(req: Request, res: Response) {
+    try {
+      const user = await AppDataSource.getRepository(User).findOne({
+        where: { id: +req.params.user_id},
+      });
+
+      if(!user) {
+        return res.status(404).json({ ok: false, error: "user-not-found"});
+      }
+
+      await AppDataSource.getRepository(User).softDelete(user);
+      console.log(`User ${user.id} deleted`);
+
+      return res.status(200).json({ ok:true, message: "Usuário deletado com sucesso"})
+    } catch (error) {
+      console.log(error, "Error in deleteUser");
+      res.status(500).send({ ok: false, error: "error-deleting-user"})      
+    }
+  }
+}
+
+export default new UserController();
