@@ -1,9 +1,11 @@
 import  express  from "express";
 import { UserRoutes } from "./routes/user";
+import { PostRoutes } from "./routes/post";
 
 export const app = express();
 
 app.use("/users", UserRoutes());
+app.post("/posts", PostRoutes());
 
 app.use(express.json())
 

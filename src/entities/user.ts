@@ -22,7 +22,7 @@ export class User {
   @Column({ default: 0})
   following_count: number;
 
-  @Column()
+  @Column({select: false})
   password_hash: string;
 
   @CreateDateColumn()

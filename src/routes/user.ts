@@ -1,7 +1,7 @@
 import { Router } from "express";
 import UserController from "../controllers/user";
 import { validateUserCreationMiddleware } from "../middlewares/validate-user-creation.middleware";
-//import { validateJwtUser } from "../../../common/middlewares/auth.middleware";
+import { validateJwtUser } from "../common/middlewares/auth.middleware";
 
 
 export const UserRoutes = () => {
@@ -23,13 +23,13 @@ export const UserRoutes = () => {
   router.delete("/:user_id", UserController.deleteUser);
 
   // POST /users/authenticate
-  //router.post("/authenticate", UserController.authenticate);
+  router.post("/authenticate", UserController.authenticate);
 
   // GET /users/posts
-  //router.get("/posts", validateJwtUser, UserController.listPosts);
+  router.get("/posts", validateJwtUser, UserController.listPosts);
 
   // GET /users/:user_id/posts
-  // router.get("/:user_id/posts", UserController.listPostsByUser);
+  router.get("/:user_id/posts", UserController.listPostsByUser);
 
   return router;
 };
