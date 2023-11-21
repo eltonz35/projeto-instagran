@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryColumn, UpdateDateColumn } from "typeorm";
 import { User } from "./user";
 import { Comment } from "./comments";
+import { Like } from "./like";
 
 
 @Entity("posts")
@@ -33,4 +34,7 @@ export class Post {
 
     @OneToMany(() => Comment, (comment) => comment.post)
     comments: Comment[];
+
+    @OneToMany(() => Like, (like) => like.post)
+    like: Like[]
 }
